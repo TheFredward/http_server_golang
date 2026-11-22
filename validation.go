@@ -3,14 +3,16 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type parameters struct {
 	Body string `json:"body"`
 }
 type respondParams struct {
-	Error string `json:"error,omitempty"`
-	Valid bool   `json:"valid,omitempty"`
+	Cleaned_body string `json:"cleaned_body,omitempty"`
+	Error        string `json:"error,omitempty"`
+	Valid        bool   `json:"valid,omitempty"`
 }
 
 func respondWithErr(w http.ResponseWriter, code int, msg string) {
@@ -39,13 +41,33 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 
 }
 
+func checkMsg(msg string) (string, error) {
+	var finalMsg string
+	profaneWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+	sliceMsg := strings.Split(msg, " ")
+	for i, word := range sliceMsg {
+		if _, ok := profaneWords[strings.ToLower(word)]; ok {
+			sliceMsg[i] = "****"
+		}
+	}
+	finalMsg = strings.Join(sliceMsg, " ")
+	return finalMsg, nil
+}
+
 func (cfg *apiConfig) handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
 	// Logic for managing POSTS requests on validate_chirp.
 	msg := []string{"Something went wrong", "Chirp is too long", "Empty body sent"}
+	var cleanedMsg string
+	var resPayload respondParams
+	var err error
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithErr(w, 400, msg[0])
 		return
@@ -58,6 +80,10 @@ func (cfg *apiConfig) handlerValidateChirp(w http.ResponseWriter, r *http.Reques
 		respondWithErr(w, 400, msg[2])
 		return
 	}
-	resParams := respondParams{Valid: true}
-	respondWithJson(w, 200, resParams)
+	cleanedMsg, err = checkMsg(params.Body)
+	if err != nil {
+		respondWithErr(w, 400, err.Error())
+	}
+	resPayload.Cleaned_body = cleanedMsg
+	respondWithJson(w, 200, resPayload)
 }
