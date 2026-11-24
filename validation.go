@@ -16,6 +16,7 @@ type respondParams struct {
 }
 
 func respondWithErr(w http.ResponseWriter, code int, msg string) {
+	// Returns the respondparams struct with specific error message
 	failedParms := respondParams{
 		Error: msg,
 	}
@@ -42,6 +43,8 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 func checkMsg(msg string) (string, error) {
+	// Filter user message.
+	// Usage of map[struct]string for 0(n) sspeed
 	var finalMsg string
 	profaneWords := map[string]struct{}{
 		"kerfuffle": {},

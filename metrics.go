@@ -6,7 +6,7 @@ import (
 )
 
 func (cfg *apiConfig) getServerCount(w http.ResponseWriter, r *http.Request) {
-	// Display the count of metrics counter
+	// Display the count of app page hits
 	w.Header().Add("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	webPage := fmt.Sprintf(`
