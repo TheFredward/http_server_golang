@@ -60,33 +60,3 @@ func checkMsg(msg string) (string, error) {
 	finalMsg = strings.Join(sliceMsg, " ")
 	return finalMsg, nil
 }
-
-func (cfg *apiConfig) handlerValidateChirp(w http.ResponseWriter, r *http.Request) {
-	// Logic for managing POSTS requests on validate_chirp.
-	msg := []string{"Something went wrong", "Chirp is too long", "Empty body sent"}
-	var cleanedMsg string
-	var resPayload respondParams
-	var err error
-
-	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
-	err = decoder.Decode(&params)
-	if err != nil {
-		respondWithErr(w, 400, msg[0])
-		return
-	}
-	if len(params.Body) > 140 {
-		respondWithErr(w, 400, msg[1])
-		return
-	}
-	if len(params.Body) == 0 {
-		respondWithErr(w, 400, msg[2])
-		return
-	}
-	cleanedMsg, err = checkMsg(params.Body)
-	if err != nil {
-		respondWithErr(w, 400, err.Error())
-	}
-	resPayload.Cleaned_body = cleanedMsg
-	respondWithJson(w, 200, resPayload)
-}
