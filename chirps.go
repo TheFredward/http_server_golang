@@ -10,11 +10,11 @@ import (
 )
 
 type Chirp struct {
-	ID        uuid.UUID     `json:"id"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
-	Body      string        `json:"body"`
-	UserID    uuid.NullUUID `json:"user_id"`
+	ID        uuid.UUID `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Body      string    `json:"body"`
+	UserID    uuid.UUID `json:"user_id"`
 }
 
 func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +55,7 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
 	}
 	cleanedData := database.CreateChirpParams{
 		Body:   cleanedMsg,
-		UserID: uuid.NullUUID{UUID: reqData.User_id, Valid: true},
+		UserID: reqData.User_id,
 	}
 	createdChirp, err := cfg.db.CreateChirp(r.Context(), cleanedData)
 	if err != nil {
@@ -70,4 +70,23 @@ func (cfg *apiConfig) handlerChirps(w http.ResponseWriter, r *http.Request) {
 		UserID:    createdChirp.UserID,
 	}
 	respondWithJson(w, 201, localChirp)
+}
+
+func (cfg *apiConfig) handlerGetAllChirps(w http.ResponseWriter, r *http.Request) {
+	var listChirps []Chirp
+	chirpsFound, err := cfg.db.GetAllChirps(r.Context())
+	if err != nil {
+		respondWithErr(w, 400, "Unable to fetch all chirps!")
+	}
+	for _, chirp := range chirpsFound {
+		localChirp := Chirp{
+			ID:        chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body:      chirp.Body,
+			UserID:    chirp.UserID,
+		}
+		listChirps = append(listChirps, localChirp)
+	}
+	respondWithJson(w, 200, listChirps)
 }

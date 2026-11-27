@@ -72,6 +72,7 @@ func main() {
 		w.Write([]byte("200 OK"))
 	})
 	mux.HandleFunc("POST /api/chirps", apicfg.handlerChirps)
+	mux.HandleFunc("GET /api/chirps", apicfg.handlerGetAllChirps)
 	mux.HandleFunc("POST /api/users", apicfg.handlerCreateUser)
 	mux.HandleFunc("GET /admin/metrics", apicfg.getServerCount)
 	mux.HandleFunc("POST /admin/reset", apicfg.resetServerCount)
